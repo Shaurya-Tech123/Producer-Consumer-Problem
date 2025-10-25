@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">Task Dashboard</h1>
+</div>
+
+{% if user.is_staff %}
+<div class="demand-form">
+  <h3>Add New Task</h3>
+  <form method="post" action="{% url 'add_demand' %}">
+    {% csrf_token %}
+    <div class="form-row">
+      <div class="form-col">
+        <label class="form-label">Task Type</label>
+        {{ form.demand_type }}
+        {% if form.errors.demand_type %}<div class="text-danger small">{{ form.errors.demand_type|striptags }}</div>{% endif %}
+      </div>
+      <div class="form-col" id="desc_wrap">
+        <label class="form-label">Description</label>
+        {{ form.description }}
+        {% if form.errors.description %}<div class="text-danger small">{{ form.errors.description|striptags }}</div>{% endif %}
+      </div>
+      <div class="form-col" id="food_wrap" style="display:none;">
+        <label class="form-label">Food Item</label>
+        {{ form.food_item }}
+        {% if form.errors.food_item %}<div class="text-danger small">{{ form.errors.food_item|striptags }}</div>{% endif %}
+      </div>
+      <div class="form-col" id="qty_wrap" style="display:none;">
+        <label class="form-label">Quantity</label>
+        {{ form.quantity }}
+        {% if form.errors.quantity %}<div class="text-danger small">{{ form.errors.quantity|striptags }}</div>{% endif %}
+      </div>
+      <div class="form-col">
+        <label class="form-label">Location</label>
+        {{ form.room_or_table }}
+        {% if form.errors.room_or_table %}<div class="text-danger small">{{ form.errors.room_or_table|striptags }}</div>{% endif %}
+      </div>
+      <div class="form-col">
+        <label class="form-label">Assigned To</label>
+        {{ form.assigned_to }}
+        {% if form.errors.assigned_to %}<div class="text-danger small">{{ form.errors.assigned_to|striptags }}</div>{% endif %}
+      </div>
+      <div class="form-col">
+        <label class="form-label">Expected Completion</label>
+        {{ form.expected_completion }}
+      </div>
+      <div class="form-col">
+        <button class="btn btn-success w-100" type="submit">Add Task</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="table-container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Completed</th>
+        <th>Time Taken</th>
+        <th>Location</th>
+        <th>Assigned To</th>
+        {% if user.is_staff %}<th>Actions</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in demands %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ d.demand_type }}</td>
+        <td>{{ d.description }}</td>
+        <td>
+          {% if d.status == 'Pending' %}
+            <span class="badge badge-pending">Pending</span>
+          {% elif d.status == 'In Progress' %}
+            <span class="badge badge-progress">In Progress</span>
+          {% else %}
+            <span class="badge badge-completed">Completed</span>
+          {% endif %}
+        </td>
+        <td>{{ d.created_at|date:"M d, Y H:i" }}</td>
+        <td>{{ d.completed_at|date:"M d, Y H:i"|default:"-" }}</td>
+        <td>
+          {% if d.completed_at %}
+            {% with td=d.completed_at|timesince:d.created_at %}
+              {{ td }}
+            {% endwith %}
+          {% else %}-{% endif %}
+        </td>
+        <td>{{ d.room_or_table|default:"-" }}</td>
+        <td>{{ d.assigned_to.name|default:"-" }}</td>
+        {% if user.is_staff %}
+        <td>
+          <div class="d-flex gap-1">
+            <a class="btn btn-sm btn-primary" href="{% url 'mark_in_progress' d.pk %}">Start</a>
+            <a class="btn btn-sm btn-success" href="{% url 'mark_completed' d.pk %}">Complete</a>
+          </div>
+        </td>
+        {% endif %}
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="{% if user.is_staff %}10{% else %}9{% endif %}" class="text-center text-muted">No tasks yet. {% if user.is_staff %}Add the first one above.{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="text-center">
+  <a class="btn btn-outline-secondary" href="{% url 'completed_list' %}">View Completed Tasks</a>
+</div>
+
+<script>
+  (function() {
+    const typeSelect = document.getElementById('id_demand_type');
+    const descWrap = document.getElementById('desc_wrap');
+    const foodWrap = document.getElementById('food_wrap');
+    const qtyWrap = document.getElementById('qty_wrap');
+    
+    function toggleInputs() {
+      if (typeSelect && typeSelect.value === 'Food') {
+        descWrap.style.display = 'none';
+        foodWrap.style.display = 'block';
+        qtyWrap.style.display = 'block';
+      } else {
+        descWrap.style.display = 'block';
+        foodWrap.style.display = 'none';
+        qtyWrap.style.display = 'none';
+      }
+    }
+    
+    if (typeSelect) {
+      typeSelect.addEventListener('change', toggleInputs);
+      toggleInputs();
+    }
+  })();
+</script>
+{% endblock %}

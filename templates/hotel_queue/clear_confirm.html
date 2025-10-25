@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <h2 class="login-title">Clear Completed Tasks</h2>
+    <div class="alert alert-danger">
+      <strong>Warning!</strong> This action will permanently delete {{ count }} completed task{{ count|pluralize }}.
+    </div>
+    <p class="text-muted mb-4">
+      This action cannot be undone. Make sure you have exported the data if you need to keep a record.
+    </p>
+    <div class="d-flex gap-1">
+      <form method="post" style="flex: 1;">
+        {% csrf_token %}
+        <button class="btn btn-danger w-100" type="submit">Yes, Clear All Data</button>
+      </form>
+      <a class="btn btn-outline-secondary" href="{% url 'completed_list' %}" style="flex: 1;">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

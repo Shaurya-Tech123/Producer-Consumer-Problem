@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">Completed Tasks</h1>
+  <div class="d-flex gap-1">
+    {% if user.is_staff %}
+      <a class="btn btn-success" href="{% url 'export_completed' %}">📊 Export to Excel</a>
+      <a class="btn btn-danger" href="{% url 'clear_completed' %}">🗑️ Clear Data</a>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Location</th>
+        <th>Created</th>
+        <th>Completed</th>
+        <th>Time Taken</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in demands %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ d.demand_type }}</td>
+        <td>{{ d.description }}</td>
+        <td>{{ d.room_or_table|default:"-" }}</td>
+        <td>{{ d.created_at|date:"M d, Y H:i" }}</td>
+        <td>{{ d.completed_at|date:"M d, Y H:i" }}</td>
+        <td>{% with td=d.completed_at|timesince:d.created_at %}{{ td }}{% endwith %}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center text-muted">No completed tasks yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

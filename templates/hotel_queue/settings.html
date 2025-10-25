@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">Hotel Settings</h1>
+</div>
+
+<div class="card">
+  <div class="card-header">Hotel Configuration</div>
+  <div class="card-body">
+    <form method="post" class="settings-form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_counts">
+      <div class="form-row">
+        <div class="form-col">
+          <label class="form-label">Number of Tables</label>
+          <input type="number" class="form-control" name="num_tables" min="1" value="{{ settings.num_tables }}">
+        </div>
+        <div class="form-col">
+          <label class="form-label">Number of Rooms</label>
+          <input type="number" class="form-control" name="num_rooms" min="1" value="{{ settings.num_rooms }}">
+        </div>
+        <div class="form-col">
+          <button class="btn btn-primary w-100" type="submit">Save Configuration</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="settings-grid">
+  <div class="settings-section">
+    <div class="settings-header">Staff Roles</div>
+    <div class="settings-body">
+      <form method="post" class="settings-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_role">
+        <div class="form-group">
+          <label class="form-label">Add New Role</label>
+          <div class="d-flex gap-1">
+            <input type="text" class="form-control" name="role_name" placeholder="e.g., Manager">
+            <button class="btn btn-primary" type="submit">Add</button>
+          </div>
+        </div>
+      </form>
+      <ul class="settings-list">
+        {% for r in roles %}
+          <li class="settings-item">
+            <span>{{ r.name }}</span>
+            <form method="post" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_role">
+              <input type="hidden" name="role_id" value="{{ r.id }}">
+              <button class="btn btn-sm btn-outline-secondary" type="submit">Delete</button>
+            </form>
+          </li>
+        {% empty %}
+          <li class="text-muted">No roles yet. Add one above.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-header">Staff Members</div>
+    <div class="settings-body">
+      <form method="post" class="settings-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_staff">
+        <div class="form-group">
+          <label class="form-label">Add New Staff Member</label>
+          <div class="form-row">
+            <div class="form-col">
+              <input type="text" class="form-control" name="staff_name" placeholder="e.g., John Doe">
+            </div>
+            <div class="form-col">
+              <select name="staff_role_id" class="form-select">
+                {% for r in roles %}
+                  <option value="{{ r.id }}">{{ r.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-col">
+              <button class="btn btn-primary w-100" type="submit">Add</button>
+            </div>
+          </div>
+        </div>
+      </form>
+      <ul class="settings-list">
+        {% for s in staff %}
+          <li class="settings-item">
+            <span>{{ s.name }} — {{ s.role.name }}</span>
+            <form method="post" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_staff">
+              <input type="hidden" name="staff_id" value="{{ s.id }}">
+              <button class="btn btn-sm btn-outline-secondary" type="submit">Delete</button>
+            </form>
+          </li>
+        {% empty %}
+          <li class="text-muted">No staff members yet. Add one above.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
